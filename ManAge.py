@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import time, serial, math
 from resources.clock_manager import CM
 from resources.data_process import *
@@ -9,6 +9,7 @@ COM_port    = sys.argv[2]
 baud_rate   = int(sys.argv[3])
 TC_idx     = sys.argv[4]
 store_path  = sys.argv[5]
+os.system(f'vivado -mode batch -source ./program.tcl -tclargs "{TC_idx}"')
 
 ############ MMCM Initialization ##############
 MMCM1 = CM(fin=100e6, D=1, M=15, O=15, mode='incremental', fpsclk=100e6)
