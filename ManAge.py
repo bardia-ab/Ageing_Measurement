@@ -9,6 +9,7 @@ COM_port    = sys.argv[2]
 baud_rate   = int(sys.argv[3])
 TC_idx     = sys.argv[4]
 store_path  = sys.argv[5]
+srcs_path  = sys.argv[6]
 os.system(f'vivado -mode batch -source ./program.tcl -tclargs "{TC_idx}"')
 
 ############ MMCM Initialization ##############
@@ -25,7 +26,7 @@ N_Bytes = math.ceil((w_shift + N_Parallel) / 8)
 sps = MMCM2.sps / N_Sets
 
 ############ Run Experiment ##############
-port = serial.Serial(COM_port, baud_rate)
+port = serial.Serial(COM_port, baud_rate, timeout=220)
 port.flushInput()
 print(port.name)
 data_rising, data_falling = [], []
@@ -41,15 +42,38 @@ data_falling += list(packet[:-3])
 port.close()
 
 ############ Processing ##############
-store_path = os.path.join(store_path, f'TC{TC_idx}')
-create_folder(store_path)
+TC_folder_path = os.path.join(store_path, f'TC{TC_idx}')
+create_folder(TC_folder_path)
 
-chars = pack_bytes(data_rising, N_Bytes)
-shift_values, CUT_indexes = decompose_shift_capture(chars, w_shift, N_Parallel)
-segments_rising = extract_delays(shift_values, CUT_indexes, sps)
-store_data(store_path, 'segments_rising.data', segments_rising)
+while 1:
+    try:
+        chars = pack_bytes(data_rising, N_Bytes)
+        shift_values, CUT_indexes = decompose_shift_capture(chars, w_shift, N_Parallel)
+        segments_rising = extract_delays(shift_values, CUT_indexes, N_Parallel, sps)
+        store_data(TC_folder_path, 'segments_rising.data', segments_rising)
+    except:
+        with open(os.path.join(store_path, 'Errors.txt'), 'a+') as file:
+            file.write(f'TC{TC_idx} => Rising Failed!\n')
 
-chars = pack_bytes(data_falling, N_Bytes)
-shift_values, CUT_indexes = decompose_shift_capture(chars, w_shift, N_Parallel)
-segments_falling = extract_delays(shift_values, CUT_indexes, sps)
-store_data(store_path, 'segments_falling.data', segments_falling)
+        break
+
+    if not validate_result(segments_rising, srcs_path, TC_idx, N_Parallel):
+        with open(os.path.join(store_path, 'validation.txt'), 'a+') as file:
+            file.write(f'TC{TC_idx} => Rising Failed!\n')
+
+    try:
+        chars = pack_bytes(data_falling, N_Bytes)
+        shift_values, CUT_indexes = decompose_shift_capture(chars, w_shift, N_Parallel)
+        segments_falling = extract_delays(shift_values, CUT_indexes, N_Parallel, sps)
+        store_data(TC_folder_path, 'segments_falling.data', segments_falling)
+    except:
+        with open(os.path.join(store_path, 'Errors.txt'), 'a+') as file:
+            file.write(f'TC{TC_idx} => Falling Failed!\n')
+
+        break
+
+    if not validate_result(segments_falling, srcs_path, TC_idx, N_Parallel):
+        with open(os.path.join(store_path, 'validation.txt'), 'a+') as file:
+            file.write(f'TC{TC_idx} => Falling Failed!\n')
+
+    break

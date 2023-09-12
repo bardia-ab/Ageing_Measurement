@@ -104,7 +104,7 @@ def decompose_shift_capture(packets, w_shift, w_capture):
 
     return shift_values, CUT_indexes
 
-def extract_delays(shift_values, CUT_indexes, sps):
+def extract_delays(shift_values, CUT_indexes, N_Parallel, sps):
     segments = []
     while shift_values:
         segments.append([])
@@ -115,14 +115,17 @@ def extract_delays(shift_values, CUT_indexes, sps):
                     delay = shift_value * sps
                     segments[-1].append((CUT_idx, delay))
 
-            prev_shift_value = shift_value
+            if len(segments[-1]) >= N_Parallel:
+                segments[-1].sort()
+                break
+            '''prev_shift_value = shift_value
             if shift_values:
                 if shift_values[0] > prev_shift_value:
                     segments[-1].sort()
                     break
             else:
                 segments[-1].sort()
-                break
+                break'''
 
     return segments
 
@@ -167,3 +170,23 @@ def load_data(Path, FileName, compress=True):
 
     return data
 
+def validate_result(segments, srcs_path, TC_idx, N_Parallel):
+    stats_path = os.path.join(srcs_path, f'TC{TC_idx}')
+    with open(os.path.join(stats_path, 'stats.txt')) as lines:
+        N_segments = int(re.search('\d+', next(lines))[0])
+        N_partial = int(re.search('\d+', next(lines))[0])
+
+    if N_partial > 0:
+        l_segments = N_segments + 1
+        if all(map(lambda x: len(x) == N_Parallel, segments[:-1])) and len(segments[-1]) == N_partial and len(segments) == l_segments:
+            result = True
+        else:
+            result = False
+    else:
+        l_segments = N_segments
+        if all(map(lambda x: len(x) == N_Parallel, segments)) and len(segments) == l_segments:
+            result = True
+        else:
+            result = False
+
+    return result
