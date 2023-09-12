@@ -118,6 +118,11 @@ def extract_delays(shift_values, CUT_indexes, N_Parallel, sps):
             if len(segments[-1]) >= N_Parallel:
                 segments[-1].sort()
                 break
+
+            if not shift_values:
+                segments[-1].sort()
+                break
+
             '''prev_shift_value = shift_value
             if shift_values:
                 if shift_values[0] > prev_shift_value:
