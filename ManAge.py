@@ -1,7 +1,16 @@
-import sys, os
+import sys, os, threading
 import time, serial, math
 from resources.clock_manager import CM
 from resources.data_process import *
+
+######################################
+class Read:
+
+    def __init__(self):
+        self.packet = None
+    def read_data(self, port):
+        self.packet = port.read_until(b'END')
+
 
 ############ User Inputs ##############
 N_Parallel  = int(sys.argv[1])
@@ -27,22 +36,31 @@ sps = MMCM2.sps / N_Sets
 
 ############ Run Experiment ##############
 port = serial.Serial(COM_port, baud_rate, timeout=220)
+R = Read()
+T1 = threading.Thread(target=Read.read_data, args=(R, port))
+T2 = threading.Thread(target=Read.read_data, args=(R, port))
 port.flushInput()
 print(port.name)
 data_rising, data_falling = [], []
 
 port.write('RUS'.encode('Ascii'))
-packet = port.read_until(b'END')
+#packet = port.read_until(b'END')
+T1.start()
+T1.join()
+packet = R.packet
 data_rising += list(packet[:-3])
 
 port.write('RDS'.encode('Ascii'))
-packet = port.read_until(b'END')
+#packet = port.read_until(b'END')
+T2.start()
+T2.join()
+packet = R.packet
 data_falling += list(packet[:-3])
 
 port.close()
 
 ############ Processing ##############
-TC_folder_path = os.path.join(store_path, f'TC{TC_idx}')
+TC_folder_path = os.path.join(store_path, f'{TC_idx}')
 create_folder(TC_folder_path)
 
 while 1:
@@ -53,13 +71,13 @@ while 1:
         store_data(TC_folder_path, 'segments_rising.data', segments_rising)
     except:
         with open(os.path.join(store_path, 'Errors.txt'), 'a+') as file:
-            file.write(f'TC{TC_idx} => Rising Failed!\n')
+            file.write(f'{TC_idx} => Rising Failed!\n')
 
         break
 
     if not validate_result(segments_rising, srcs_path, TC_idx, N_Parallel):
         with open(os.path.join(store_path, 'validation.txt'), 'a+') as file:
-            file.write(f'TC{TC_idx} => Rising Failed!\n')
+            file.write(f'{TC_idx} => Rising Failed!\n')
 
     try:
         chars = pack_bytes(data_falling, N_Bytes)
@@ -68,12 +86,12 @@ while 1:
         store_data(TC_folder_path, 'segments_falling.data', segments_falling)
     except:
         with open(os.path.join(store_path, 'Errors.txt'), 'a+') as file:
-            file.write(f'TC{TC_idx} => Falling Failed!\n')
+            file.write(f'{TC_idx} => Falling Failed!\n')
 
         break
 
     if not validate_result(segments_falling, srcs_path, TC_idx, N_Parallel):
         with open(os.path.join(store_path, 'validation.txt'), 'a+') as file:
-            file.write(f'TC{TC_idx} => Falling Failed!\n')
+            file.write(f'{TC_idx} => Falling Failed!\n')
 
     break

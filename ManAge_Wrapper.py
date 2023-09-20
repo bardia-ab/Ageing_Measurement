@@ -20,8 +20,10 @@ N_Errors = count(start=1)
 Errors = []
 
 #os.system(f'python3 ManAge.py {N_Parallel} {COM_port} {baud_rate} {157} {results_path} {srcs_path}')
-for TC in os.listdir(bitstream_path):
-    TC_idx = re.search('\d+', TC)[0]
+TCs = sorted(os.listdir(bitstream_path), key= lambda x: re.search('\d+', x)[0])
+for TC in TCs:
+    #TC_idx = re.search('\d+', TC)[0]
+    TC_idx = TC.split('.')[0]
     try:
         os.system(f'python3 ManAge.py {N_Parallel} {COM_port} {baud_rate} {TC_idx} {results_path} {srcs_path}')
     except:

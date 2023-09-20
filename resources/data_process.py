@@ -176,7 +176,7 @@ def load_data(Path, FileName, compress=True):
     return data
 
 def validate_result(segments, srcs_path, TC_idx, N_Parallel):
-    stats_path = os.path.join(srcs_path, f'TC{TC_idx}')
+    stats_path = os.path.join(srcs_path, f'{TC_idx}')
     with open(os.path.join(stats_path, 'stats.txt')) as lines:
         N_segments = int(re.search('\d+', next(lines))[0])
         N_partial = int(re.search('\d+', next(lines))[0])

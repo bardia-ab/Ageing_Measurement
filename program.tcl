@@ -13,4 +13,5 @@ proc program {bit_file} {
 	refresh_hw_device [lindex [get_hw_devices] 0]
 }
 
-program "/home/bardia/Desktop/bardia/Timing_Characterization/Data/Bitstreams/TC[lindex $argv 0].bit"
+#program "/home/bardia/Desktop/bardia/Timing_Characterization/Data/Bitstreams/[lindex $argv 0].bit"
+program "/home/bardia/Desktop/bardia/Timing_Characterization/CR_X2Y1/Bitstreams/[lindex $argv 0].bit"
