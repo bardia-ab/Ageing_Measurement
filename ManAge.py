@@ -13,19 +13,19 @@ class Read:
 
 
 ############ User Inputs ##############
-N_Parallel  = int(sys.argv[1])
-COM_port    = sys.argv[2]
-baud_rate   = int(sys.argv[3])
-TC_idx     = sys.argv[4]
-store_path  = sys.argv[5]
-srcs_path  = sys.argv[6]
-os.system(f'vivado -mode batch -source ./program.tcl -tclargs "{TC_idx}"')
+N_Parallel      = int(sys.argv[1])
+COM_port        = sys.argv[2]
+baud_rate       = int(sys.argv[3])
+TC_idx          = sys.argv[4]
+bitstream_path  = sys.argv[5]
+store_path      = sys.argv[6]
+srcs_path       = sys.argv[7]
+os.system(f'vivado -mode batch -nolog -nojournal -source ./program.tcl -tclargs "{bitstream_path}" "{TC_idx}"')
 
 ############ MMCM Initialization ##############
 MMCM1 = CM(fin=100e6, D=1, M=15, O=15, mode='incremental', fpsclk=100e6)
 MMCM2 = CM(fin=MMCM1.fout, D=1, M=16, O=16, mode='decremental', fpsclk=100e6)
 MMCM3 = CM(fin=MMCM1.fout, D=1, M=16, O=16)
-#N_Parallel = 50
 
 T = 1 / MMCM2.fout
 N_Sets = MMCM1.fvco // (MMCM2.fvco - MMCM1.fvco)
@@ -56,6 +56,7 @@ T2.start()
 T2.join()
 packet = R.packet
 data_falling += list(packet[:-3])
+port.write('R'.encode('Ascii'))
 
 port.close()
 
