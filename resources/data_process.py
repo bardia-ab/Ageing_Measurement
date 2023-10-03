@@ -24,7 +24,8 @@ def pack_data(path, num_bytes):
         if line.endswith('454E44'):
             line = line[:-6]
         else:
-            breakpoint()
+            pass
+            #breakpoint()
 
         if len(lines) != 1:
             chars.extend(line.split())
