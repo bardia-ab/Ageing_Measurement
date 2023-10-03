@@ -12,6 +12,7 @@ failed_path = os.path.join(results_path, 'Failed')
 #create_folder(failed_path)
 #create_folder(bitstream_path)
 #create_folder(os.path.join(results_path, 'DCPs'))
+create_folder(os.path.join(results_path, 'Logs'))
 with open (os.path.join(results_path, 'Errors.txt'), 'w') as file1:
     pass
 
