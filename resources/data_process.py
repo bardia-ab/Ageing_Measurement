@@ -14,13 +14,18 @@ def pack_bytes(data, N_bytes):
 
 def pack_data(path, num_bytes):
     # It takes a text file path and groups the received data according to num_bytes determined in the HDL
-    file = open(path)
-    lines = file.readlines()
+    file = open(path, encoding='utf-8')
+    try:
+        lines = file.readlines()
+    except UnicodeDecodeError:
+        lines = file.readlines()
+
     file.close()
 
     chars = []
     n = num_bytes * 2
     for line in lines:
+        line = line.replace(' ', '')
         if line.endswith('454E44'):
             line = line[:-6]
         else:
@@ -31,7 +36,7 @@ def pack_data(path, num_bytes):
             chars.extend(line.split())
         else:
             for i in range(0, len(line), n):
-                chars.extend([lines[0][i:i + n]])
+                chars.extend([line[i:i + n]])
 
     return chars
 
@@ -106,19 +111,25 @@ def decompose_shift_capture(packets, w_shift, w_capture):
     return shift_values, CUT_indexes
 
 def extract_delays(shift_values, CUT_indexes, N_Parallel, sps):
-    segments = []
+    segments = [[]]
     while shift_values:
-        segments.append([])
+        #segments.append([])
         while 1:
             shift_value = shift_values.pop(0)
+            N_triggered = sum([1 for c in CUT_indexes[0] if c == '1'])
+            if (len(segments[-1]) + N_triggered) > N_Parallel:
+                segments[-1].sort()
+                segments.append([])
+
             for CUT_idx, val in enumerate(CUT_indexes.pop(0)):
                 if val == '1':
                     delay = shift_value * sps
                     segments[-1].append((CUT_idx, delay))
 
-            if len(segments[-1]) >= N_Parallel:
+
+            '''if len(segments[-1]) >= N_Parallel:
                 segments[-1].sort()
-                break
+                break'''
 
             if not shift_values:
                 segments[-1].sort()

@@ -18,7 +18,8 @@ w_shift = math.ceil(math.log2(N_Samples))
 N_Bytes = math.ceil((w_shift + N_Parallel) / 8)
 sps = MMCM2.sps / N_Sets
 
-txt_file = os.path.join(r'C:\Users\t26607bb\Desktop', 'Tx.txt')
+#txt_file = os.path.join(r'C:\Users\t26607bb\Desktop', 'Tx.txt')
+txt_file = os.path.join(r'/home/bardia/Desktop', 'Tx.txt')
 chars = pack_data(txt_file, N_Bytes)
 shift_values, CUT_indexes = decompose_shift_capture(chars, w_shift, N_Parallel)
 segments = extract_delays(shift_values, CUT_indexes, N_Parallel, sps)

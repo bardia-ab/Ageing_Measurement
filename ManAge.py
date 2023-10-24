@@ -21,7 +21,7 @@ bitstream_path  = sys.argv[5]
 store_path      = sys.argv[6]
 srcs_path       = sys.argv[7]
 os.system(f'vivado -mode batch -nolog -nojournal -source ./program.tcl -tclargs "{bitstream_path}" "{TC_idx}"')
-
+time.sleep(10)
 ############ MMCM Initialization ##############
 MMCM1 = CM(fin=100e6, D=1, M=15, O=15, mode='incremental', fpsclk=100e6)
 MMCM2 = CM(fin=MMCM1.fout, D=1, M=16, O=16, mode='decremental', fpsclk=100e6)
@@ -79,6 +79,8 @@ while 1:
     if not validate_result(segments_rising, srcs_path, TC_idx, N_Parallel):
         with open(os.path.join(store_path, 'validation.txt'), 'a+') as file:
             file.write(f'{TC_idx} => Rising Failed!\n')
+    else:
+        print(f'{TC_idx} => Rising Passed!\n')
 
     try:
         chars = pack_bytes(data_falling, N_Bytes)
@@ -94,5 +96,7 @@ while 1:
     if not validate_result(segments_falling, srcs_path, TC_idx, N_Parallel):
         with open(os.path.join(store_path, 'validation.txt'), 'a+') as file:
             file.write(f'{TC_idx} => Falling Failed!\n')
+    else:
+        print(f'{TC_idx} => Falling Passed!\n')
 
     break
