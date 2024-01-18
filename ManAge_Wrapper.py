@@ -3,9 +3,9 @@ from itertools import count
 from resources.data_process import create_folder, store_data
 
 start_time = time.time()
-bitstream_path = '/home/bardia/Desktop/bardia/Timing_Characterization/Data/Bitstreams'  #program
-results_path = '/home/bardia/Desktop/bardia/Timing_Characterization/Data/Results'       #store
-srcs_path = '/home/bardia/Desktop/bardia/Timing_Characterization/Data/Vivado_Sources'   #validation
+bitstream_path = '/home/bardia/Desktop/bardia/Timing_Characterization/Data_xczu9eg/Bitstreams/X3Y0'  #program
+results_path = '/home/bardia/Desktop/bardia/Timing_Characterization/Data_xczu9eg/Results/X3Y0'       #store
+srcs_path = '/home/bardia/Desktop/bardia/Timing_Characterization/Data_xczu9eg/Vivado_Sources_local/X3Y0'   #validation
 create_folder(results_path)
 with open (os.path.join(results_path, 'Errors.txt'), 'w') as file1:
     pass
@@ -18,7 +18,8 @@ COM_port = '/dev/ttyUSB0'
 N_Parallel = 50
 N_Errors = count(start=1)
 
-TCs = sorted(os.listdir(bitstream_path), key= lambda x: re.search('\d+', x)[0])
+bitstreams = [file for file in os.listdir(bitstream_path) if file.startswith('TC')]
+TCs = sorted(bitstreams, key= lambda x: int(re.findall('\d+', x)[0]))
 for TC in TCs:
     TC_idx = TC.split('.')[0]
     try:
